@@ -37,10 +37,17 @@ class GameController extends Controller
 
     public function validateGuess(Request $request)
     {
-        $request->validate([
-            'idJogo' => 'required',
+        $validator = validator($request->all(), [
+             'idJogo' => 'required',
             'palavra' => 'required|string|size:5'
-        ]);
+]);
+
+        if ($validator->fails()) {
+             return response()->json([
+                 'message' => 'Requisição inválida',
+                'errors' => $validator->errors()
+             ], 400);
+}
 
         $game = Game::where('game_id', $request->idJogo)->first();
 
