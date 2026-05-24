@@ -1,23 +1,26 @@
 FROM php:8.2-cli
 
-RUN apt-get update && apt-get install -y \
-    unzip \
-    git \
-    sqlite3 \
-    libsqlite3-dev
+WORKDIR /var/www
 
+# Dependências do sistema
+RUN apt-get update && apt-get install -y \
+    unzip zip curl git libzip-dev \
+    && docker-php-ext-install zip
+
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /app
-
+# Copia projeto
 COPY . .
 
-RUN composer install
+# Instala dependências
+RUN composer install --no-interaction --prefer-dist
 
-RUN touch database/database.sqlite
+# Permissões
+RUN chmod -R 775 storage bootstrap/cache
 
-RUN php artisan migrate --force
-
+# Porta do Render
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# 🔥 IMPORTANTE: usar /public e porta dinâmica
+CMD php -S 0.0.0.0:$PORT -t public
