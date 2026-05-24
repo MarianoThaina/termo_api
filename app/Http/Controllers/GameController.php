@@ -38,16 +38,16 @@ class GameController extends Controller
     public function validateGuess(Request $request)
     {
         $validator = validator($request->all(), [
-             'idJogo' => 'required',
+            'idJogo' => 'required',
             'palavra' => 'required|string|size:5'
-]);
+        ]);
 
         if ($validator->fails()) {
-             return response()->json([
-                 'message' => 'Requisição inválida',
+            return response()->json([
+                'message' => 'Requisição inválida',
                 'errors' => $validator->errors()
-             ], 400);
-}
+            ], 400);
+        }
 
         $game = Game::where('game_id', $request->idJogo)->first();
 
@@ -57,7 +57,24 @@ class GameController extends Controller
             ], 404);
         }
 
+        // Bloqueia tentativas após 6 jogadas
+        if ($game->attempts >= 6) {
+            return response()->json([
+                'message' => 'Limite de tentativas atingido'
+            ], 400);
+        }
+
         $guess = strtolower($request->palavra);
+
+        // Verifica se a palavra existe no dicionário
+        if (!in_array($guess, $this->getWords())) {
+            return response()->json([
+                'resultado' => [],
+                'venceu' => false,
+                'tentativasRestantes' => 6 - $game->attempts,
+                'palavraValida' => false
+            ], 200);
+        }
 
         $secret = strtolower($game->secret_word);
 
@@ -98,7 +115,7 @@ class GameController extends Controller
             'resultado' => $result,
             'venceu' => $won,
             'tentativasRestantes' => 6 - $game->attempts,
-            'palavraValida' => in_array($guess, $this->getWords())
+            'palavraValida' => true
         ], 200);
     }
 }
