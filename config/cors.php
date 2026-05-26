@@ -8,7 +8,7 @@ return [
     // Permite todos os métodos HTTP
     'allowed_methods' => ['*'],
 
-    // Libera acesso para o site do professor
+    // Libera acesso para o site 
     'allowed_origins' => ['https://termorest.conradosal.com'],
 
     'allowed_origins_patterns' => [],
